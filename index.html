@@ -262,13 +262,13 @@
 
         /* ---------------- NEW SECTION: KEYR PREMIUM SHOWCASE ---------------- */
         const KeyrShowcase = () => (
-            <section id="keyr" className="w-full bg-slate-950 text-white overflow-hidden border-y border-slate-900 relative">
-                {/* Background Ambient Glow */}
-                <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-slate-900 via-transparent to-transparent pointer-events-none"></div>
+            <section id="keyr" className="w-full bg-slate-950 text-white overflow-hidden border-y border-slate-900 relative" style={{ backgroundImage: "url('https://placehold.co/1920x800/0f172a/ffffff?text=KEYR+Hero+Background+(Replace+URL)')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+                {/* Dark overlay to ensure text readability against any background image */}
+                <div className="absolute inset-0 bg-black/30 pointer-events-none"></div>
 
                 {/* HERO AREA */}
-                <div className="max-w-7xl mx-auto px-6 pt-20 pb-10 md:pt-32 md:pb-20 flex flex-col md:flex-row items-center justify-between relative z-10">
-                    {/* Text Content */}
+                <div className="max-w-7xl mx-auto px-6 pt-20 pb-10 md:pt-32 md:pb-20 flex flex-col md:flex-row items-center relative z-10">
+                    {/* Text Content - Left Aligned, Position & Style Preserved */}
                     <div className="md:w-1/2 text-center md:text-left mb-16 md:mb-0 z-10">
                         <div className="inline-block px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] tracking-[0.2em] font-bold text-slate-400 mb-6 uppercase">Hardware Authenticator</div>
                         <h2 className="text-6xl md:text-8xl font-bold tracking-tighter mb-4">KEYR</h2>
@@ -278,77 +278,49 @@
                         </button>
                     </div>
                     
-                    {/* Hero Image (Vector Representation of Premium Wearable) */}
-                    <div className="md:w-1/2 flex justify-center relative">
-                         {/* Decorative glow behind device */}
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-brand-accent/20 blur-[80px] rounded-full"></div>
-                        
-                        <svg viewBox="0 0 500 500" className="w-72 h-72 md:w-[500px] md:h-[500px] relative z-10 drop-shadow-2xl transform hover:scale-105 transition-transform duration-700">
-                            <defs>
-                                <linearGradient id="metalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" stopColor="#64748b" />
-                                    <stop offset="50%" stopColor="#1e293b" />
-                                    <stop offset="100%" stopColor="#0f172a" />
-                                </linearGradient>
-                                <linearGradient id="screenGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                                    <stop offset="0%" stopColor="#000000" />
-                                    <stop offset="100%" stopColor="#1e293b" />
-                                </linearGradient>
-                            </defs>
-                            
-                            {/* Strap Top */}
-                            <path d="M170,80 C170,40 330,40 330,80 L330,160 L170,160 Z" fill="#334155" />
-                            {/* Strap Bottom */}
-                            <path d="M170,420 C170,460 330,460 330,420 L330,340 L170,340 Z" fill="#334155" />
-                            
-                            {/* Device Body */}
-                            <rect x="150" y="150" width="200" height="200" rx="50" fill="url(#metalGrad)" stroke="#475569" strokeWidth="2" />
-                            
-                            {/* Screen */}
-                            <rect x="160" y="160" width="180" height="180" rx="42" fill="url(#screenGrad)" />
-                            
-                            {/* UI: Pulse Ring */}
-                            <circle cx="250" cy="250" r="60" fill="none" stroke="#38bdf8" strokeWidth="3" opacity="0.8" />
-                            <circle cx="250" cy="250" r="40" fill="#38bdf8" fillOpacity="0.1" />
-                            
-                            {/* UI: Data Points */}
-                            <circle cx="250" cy="190" r="4" fill="#22c55e" />
-                            <text x="250" y="260" textAnchor="middle" fill="white" fontSize="24" fontFamily="monospace" fontWeight="bold">98%</text>
-                            <text x="250" y="280" textAnchor="middle" fill="#94a3b8" fontSize="10" letterSpacing="2">HUMAN</text>
-                        </svg>
-                    </div>
+                    {/* Right-side device mock REMOVED as per request */}
                 </div>
 
                 {/* PRODUCT STRIP */}
-                <div className="w-full bg-slate-900 border-t border-slate-800 py-12">
+                <div className="w-full bg-slate-900/80 backdrop-blur-sm border-t border-slate-800 py-12 relative z-10">
                     <div className="max-w-7xl mx-auto px-6 overflow-x-auto">
                         <div className="flex justify-center min-w-max space-x-12 md:space-x-32 items-end">
                             {/* Item 1: KEYR One */}
                             <div className="flex flex-col items-center group cursor-pointer">
-                                <div className="w-32 h-32 md:w-40 md:h-40 bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl flex items-center justify-center mb-6 group-hover:-translate-y-2 transition-transform duration-300 border border-slate-700 group-hover:border-brand-accent/50 shadow-lg">
-                                     <svg viewBox="0 0 100 100" className="w-20 h-20">
-                                        <rect x="30" y="30" width="40" height="40" rx="10" fill="#94a3b8" />
-                                        <rect x="35" y="35" width="30" height="30" rx="8" fill="#0f172a" />
-                                     </svg>
+                                {/* Existing Frame Reused */}
+                                <div className="w-32 h-32 md:w-40 md:h-40 bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl flex items-center justify-center mb-6 group-hover:-translate-y-2 transition-transform duration-300 border border-slate-700 group-hover:border-brand-accent/50 shadow-lg overflow-hidden">
+                                     {/* Real Image Placeholder - No UI Drawings */}
+                                     <img 
+                                        src="https://placehold.co/150x150/1e293b/cbd5e1?text=KEYR+One" 
+                                        alt="KEYR One" 
+                                        className="w-full h-full object-contain p-4" 
+                                     />
                                 </div>
                                 <span className="text-base font-semibold text-white tracking-wide">KEYR One</span>
                             </div>
 
-                             {/* Item 2: KEYR Ring */}
+                             {/* Item 2: KEYR EarMate */}
                             <div className="flex flex-col items-center group cursor-pointer opacity-60 hover:opacity-100 transition-opacity duration-300">
-                                 <div className="w-32 h-32 md:w-40 md:h-40 bg-transparent rounded-3xl flex items-center justify-center mb-6 group-hover:-translate-y-2 transition-transform duration-300">
-                                     <div className="w-24 h-24 rounded-full border-[12px] border-slate-700 shadow-xl group-hover:border-slate-500 transition-colors"></div>
+                                 <div className="w-32 h-32 md:w-40 md:h-40 bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl flex items-center justify-center mb-6 group-hover:-translate-y-2 transition-transform duration-300 border border-slate-700 overflow-hidden">
+                                     <img 
+                                        src="https://placehold.co/150x150/1e293b/cbd5e1?text=KEYR+EarMate" 
+                                        alt="KEYR EarMate" 
+                                        className="w-full h-full object-contain p-4" 
+                                     />
                                 </div>
-                                <span className="text-base font-medium text-slate-400">KEYR Ring</span>
+                                <span className="text-base font-medium text-slate-400">KEYR EarMate</span>
                             </div>
                             
-                             {/* Item 3: KEYR Badge */}
+                             {/* Item 3: KEYR Future */}
                              <div className="flex flex-col items-center group cursor-pointer opacity-60 hover:opacity-100 transition-opacity duration-300">
-                                 <div className="w-32 h-32 md:w-40 md:h-40 bg-transparent rounded-3xl flex items-center justify-center mb-6 group-hover:-translate-y-2 transition-transform duration-300">
-                                     <rect width="60" height="80" rx="4" fill="transparent" stroke="#475569" strokeWidth="4" />
-                                     <div className="w-16 h-20 border-2 border-slate-700 rounded bg-slate-800/50"></div>
+                                 <div className="w-32 h-32 md:w-40 md:h-40 bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl flex items-center justify-center mb-6 group-hover:-translate-y-2 transition-transform duration-300 border border-slate-700 overflow-hidden">
+                                     <img 
+                                        src="https://placehold.co/150x150/1e293b/cbd5e1?text=Future" 
+                                        alt="KEYR Future" 
+                                        className="w-full h-full object-contain p-4" 
+                                     />
                                 </div>
-                                <span className="text-base font-medium text-slate-400">KEYR Badge</span>
+                                <span className="text-base font-medium text-slate-400">KEYR Future</span>
                             </div>
                         </div>
                     </div>
