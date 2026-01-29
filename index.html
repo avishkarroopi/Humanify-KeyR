@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Humanify OS | The Trust Layer for the Post-AI World</title>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            900: '#0f172a', // Slate 900
+                            800: '#1e293b', // Slate 800
+                            accent: '#38bdf8', // Sky 400
+                            success: '#22c55e', // Green 500
+                            warning: '#f59e0b', // Amber 500
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .nav-sticky {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .gradient-text {
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .grid-bg {
+            background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+        /* For the simulated terminal */
+        .terminal-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+
+        // --- ICONS (SVG Components) ---
+        const Icons = {
+            Fingerprint: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 12c0-3 2.5-5.5 5.5-5.5S23 9 23 12M12 12c0 3-2.5 5.5-5.5 5.5S1 15 1 12M12 12V2"/><path d="M19 12c0-1.5-1-3-3-3s-2.5 1-2.5 2.5"/><path d="M5 12c0 1.5 1 3 3 3s2.5-1 2.5-2.5"/><path d="M12 7V4"/><path d="M12 20v-3"/></svg>,
+            ShieldCheck: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>,
+            Award: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>,
+            Network: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/></svg>,
+            Cpu: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3"/><path d="M15 1v3"/><path d="M9 20v3"/><path d="M15 20v3"/><path d="M20 9h3"/><path d="M20 14h3"/><path d="M1 9h3"/><path d="M1 14h3"/></svg>,
+            Building: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M16 18h.01"/></svg>,
+            ArrowRight: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>,
+            Lock: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
+            FileText: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>,
+            Scale: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>,
+            UserCheck: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>,
+            Target: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
+            Terminal: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+        };
+
+        // --- COMPONENTS ---
+
+        const Nav = () => (
+            <nav className="nav-sticky px-6 py-4 flex justify-between items-center">
+                <div className="flex items-center space-x-2">
+                    <div className="w-8 h-8 bg-brand-accent rounded flex items-center justify-center text-brand-900 font-bold">
+                        H
+                    </div>
+                    <span className="font-bold text-lg tracking-tight">HUMANIFY OS</span>
+                </div>
+                <div className="hidden md:flex space-x-8 text-sm font-medium text-slate-300">
+                    <a href="#mission" className="hover:text-white transition">The Crisis</a>
+                    <a href="#architecture" className="hover:text-white transition">Architecture</a>
+                    <a href="#keyr" className="hover:text-white transition text-brand-accent">KEYR</a>
+                    <a href="#mvp" className="hover:text-white transition">Live MVP</a>
+                    <a href="#how-it-works" className="hover:text-white transition">System Flow</a>
+                    <a href="#market" className="hover:text-white transition">Market</a>
+                    <a href="#investors" className="hover:text-white transition">Investors</a>
+                </div>
+                <button className="bg-slate-800 border border-slate-600 px-4 py-2 rounded text-sm hover:bg-slate-700 transition">
+                    Request Access
+                </button>
+            </nav>
+        );
+
+        const Hero = () => (
+            <section className="relative pt-20 pb-32 px-6 border-b border-slate-800 grid-bg">
+                <div className="max-w-4xl mx-auto text-center">
+                    <div className="inline-block px-3 py-1 bg-brand-accent/10 text-brand-accent border border-brand-accent/20 rounded-full text-xs font-mono mb-6">
+                        OS VERSION: GENESIS 1.0 // STATUS: OPERATIONAL
+                    </div>
+                    <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6">
+                        Restoring Trust in a <br /><span className="gradient-text">Post-AI World.</span>
+                    </h1>
+                    <p className="text-xl text-slate-400 mb-10 max-w-2xl mx-auto">
+                        In an AI world, trust is broken. Humanify OS is the digital operating system designed to verify authenticity, validate skills, and incentivize human dignity.
+                    </p>
+                    <div className="flex flex-col md:flex-row justify-center gap-4">
+                        <button className="bg-brand-accent text-brand-900 px-8 py-3 rounded font-semibold hover:bg-sky-300 transition flex items-center justify-center gap-2">
+                            View Platform Architecture <Icons.ArrowRight />
+                        </button>
+                        <button className="bg-transparent border border-slate-600 text-slate-300 px-8 py-3 rounded font-semibold hover:border-slate-400 transition">
+                            Read the Whitepaper
+                        </button>
+                    </div>
+                </div>
+            </section>
+        );
+
+        const ContextSection = () => (
+            <section id="mission" className="py-20 px-6 border-b border-slate-800 bg-slate-900">
+                <div className="max-w-6xl mx-auto">
+                    <div className="grid md:grid-cols-2 gap-12 items-center">
+                        <div>
+                            <h2 className="text-3xl font-bold mb-6">The Collapse of Originality</h2>
+                            <p className="text-slate-400 mb-4 text-lg">
+                                We are entering the "Zero Trust" era. AI can now generate infinite fake identities, fake credentials, and fake content. 
+                            </p>
+                            <p className="text-slate-400 mb-4">
+                                Existing platforms verify <strong>Identity</strong> (KYC), but they fail to verify <strong>Humanity</strong> or <strong>Capability</strong>. 
+                                The result? A digital ecosystem flooded with noise, where human value is rapidly diluting.
+                            </p>
+                            <div className="mt-8 border-l-4 border-red-500 pl-4">
+                                <p className="text-white font-medium italic">
+                                    "When everything can be faked, the only valuable asset is what can be proven."
+                                </p>
+                            </div>
+                        </div>
+                        <div className="glass-panel p-8 rounded-xl">
+                            <h3 className="text-xl font-semibold mb-4 text-brand-accent">The Humanify Gap Analysis</h3>
+                            <ul className="space-y-4">
+                                <li className="flex items-start gap-3">
+                                    <div className="text-red-500 mt-1">✕</div>
+                                    <div>
+                                        <strong className="block text-slate-200">Current Web</strong>
+                                        <span className="text-sm text-slate-500">Anonymous, bot-heavy, unverifiable skills.</span>
+                                    </div>
+                                </li>
+                                <li className="flex items-start gap-3">
+                                    <div className="text-yellow-500 mt-1">~</div>
+                                    <div>
+                                        <strong className="block text-slate-200">Traditional ID (Govt)</strong>
+                                        <span className="text-sm text-slate-500">Verifies "Who you are," but not "What you do" online. Slow, offline.</span>
+                                    </div>
+                                </li>
+                                <li className="flex items-start gap-3">
+                                    <div className="text-brand-success mt-1">✓</div>
+                                    <div>
+                                        <strong className="block text-white">Humanify OS</strong>
+                                        <span className="text-sm text-slate-400">Verifies origin, effort, skill, and moral intent in real-time.</span>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        );
+
+        const Architecture = () => (
+            <section id="architecture" className="py-24 px-6 bg-slate-950">
+                <div className="max-w-7xl mx-auto">
+                    <div className="text-center mb-16">
+                        <h2 className="text-sm font-mono text-brand-accent mb-2">SYSTEM ARCHITECTURE</h2>
+                        <h3 className="text-4xl font-bold text-white">The 4 Pillars of Humanify OS</h3>
+                        <p className="text-slate-400 mt-4">Not an app. Not a token. An infrastructure layer.</p>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {/* Module 1 */}
+                        <div className="glass-panel p-6 rounded-lg border-t-4 border-t-brand-accent hover:-translate-y-1 transition duration-300">
+                            <div className="bg-slate-800 w-12 h-12 rounded flex items-center justify-center mb-4 text-brand-accent">
+                                <Icons.Fingerprint />
+                            </div>
+                            <h4 className="text-xl font-bold mb-2">Humanify</h4>
+                            <p className="text-xs font-mono text-slate-500 mb-3">AUTHENTICITY LAYER</p>
+                            <p className="text-slate-400 text-sm">
+                                Detects AI content vs. Human content. Issues a cryptographic 'Human Signature' bound to behavior, preventing deepfakes and bot activity.
+                            </p>
+                        </div>
+
+                        {/* Module 2 */}
+                        <div className="glass-panel p-6 rounded-lg border-t-4 border-t-brand-success hover:-translate-y-1 transition duration-300">
+                            <div className="bg-slate-800 w-12 h-12 rounded flex items-center justify-center mb-4 text-brand-success">
+                                <Icons.Award />
+                            </div>
+                            <h4 className="text-xl font-bold mb-2">Eduvalid</h4>
+                            <p className="text-xs font-mono text-slate-500 mb-3">SKILL VERIFICATION</p>
+                            <p className="text-slate-400 text-sm">
+                                Combats fake degrees. validates skills through proof-of-work and peer consensus. Used for hiring, teaching, and professional licensing.
+                            </p>
+                        </div>
+
+                        {/* Module 3 */}
+                        <div className="glass-panel p-6 rounded-lg border-t-4 border-t-brand-warning hover:-translate-y-1 transition duration-300">
+                            <div className="bg-slate-800 w-12 h-12 rounded flex items-center justify-center mb-4 text-brand-warning">
+                                <Icons.ShieldCheck />
+                            </div>
+                            <h4 className="text-xl font-bold mb-2">HNex</h4>
+                            <p className="text-xs font-mono text-slate-500 mb-3">HUMANITY CREDITS</p>
+                            <p className="text-slate-400 text-sm">
+                                A non-tradeable, behavior-based reputation score. Points are earned via verified teaching and honesty. NOT a speculative cryptocurrency.
+                            </p>
+                        </div>
+
+                        {/* Module 4 */}
+                        <div className="glass-panel p-6 rounded-lg border-t-4 border-t-purple-500 hover:-translate-y-1 transition duration-300">
+                            <div className="bg-slate-800 w-12 h-12 rounded flex items-center justify-center mb-4 text-purple-500">
+                                <Icons.Network />
+                            </div>
+                            <h4 className="text-xl font-bold mb-2">Integration</h4>
+                            <p className="text-xs font-mono text-slate-500 mb-3">ECOSYSTEM API</p>
+                            <p className="text-slate-400 text-sm">
+                                The bridge to external apps (Muziclly, LMS, Gov Portals). Apps use Humanify OS as their "Trust Backbone" to filter users.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        );
+
+        /* ---------------- NEW SECTION: KEYR PREMIUM SHOWCASE ---------------- */
+        const KeyrShowcase = () => (
+            <section id="keyr" className="w-full bg-slate-950 text-white overflow-hidden border-y border-slate-900 relative">
+                {/* Background Ambient Glow */}
+                <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-slate-900 via-transparent to-transparent pointer-events-none"></div>
+
+                {/* HERO AREA */}
+                <div className="max-w-7xl mx-auto px-6 pt-20 pb-10 md:pt-32 md:pb-20 flex flex-col md:flex-row items-center justify-between relative z-10">
+                    {/* Text Content */}
+                    <div className="md:w-1/2 text-center md:text-left mb-16 md:mb-0 z-10">
+                        <div className="inline-block px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] tracking-[0.2em] font-bold text-slate-400 mb-6 uppercase">Hardware Authenticator</div>
+                        <h2 className="text-6xl md:text-8xl font-bold tracking-tighter mb-4">KEYR</h2>
+                        <p className="text-2xl md:text-3xl text-slate-400 font-light mb-10 tracking-wide">Humanify OS Companion</p>
+                        <button className="px-10 py-4 rounded-full border border-white/30 hover:bg-white hover:text-black transition-all duration-300 text-sm font-medium tracking-widest uppercase">
+                            Pre-Order Device
+                        </button>
+                    </div>
+                    
+                    {/* Hero Image (Vector Representation of Premium Wearable) */}
+                    <div className="md:w-1/2 flex justify-center relative">
+                         {/* Decorative glow behind device */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-brand-accent/20 blur-[80px] rounded-full"></div>
+                        
+                        <svg viewBox="0 0 500 500" className="w-72 h-72 md:w-[500px] md:h-[500px] relative z-10 drop-shadow-2xl transform hover:scale-105 transition-transform duration-700">
+                            <defs>
+                                <linearGradient id="metalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stopColor="#64748b" />
+                                    <stop offset="50%" stopColor="#1e293b" />
+                                    <stop offset="100%" stopColor="#0f172a" />
+                                </linearGradient>
+                                <linearGradient id="screenGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stopColor="#000000" />
+                                    <stop offset="100%" stopColor="#1e293b" />
+                                </linearGradient>
+                            </defs>
+                            
+                            {/* Strap Top */}
+                            <path d="M170,80 C170,40 330,40 330,80 L330,160 L170,160 Z" fill="#334155" />
+                            {/* Strap Bottom */}
+                            <path d="M170,420 C170,460 330,460 330,420 L330,340 L170,340 Z" fill="#334155" />
+                            
+                            {/* Device Body */}
+                            <rect x="150" y="150" width="200" height="200" rx="50" fill="url(#metalGrad)" stroke="#475569" strokeWidth="2" />
+                            
+                            {/* Screen */}
+                            <rect x="160" y="160" width="180" height="180" rx="42" fill="url(#screenGrad)" />
+                            
+                            {/* UI: Pulse Ring */}
+                            <circle cx="250" cy="250" r="60" fill="none" stroke="#38bdf8" strokeWidth="3" opacity="0.8" />
+                            <circle cx="250" cy="250" r="40" fill="#38bdf8" fillOpacity="0.1" />
+                            
+                            {/* UI: Data Points */}
+                            <circle cx="250" cy="190" r="4" fill="#22c55e" />
+                            <text x="250" y="260" textAnchor="middle" fill="white" fontSize="24" fontFamily="monospace" fontWeight="bold">98%</text>
+                            <text x="250" y="280" textAnchor="middle" fill="#94a3b8" fontSize="10" letterSpacing="2">HUMAN</text>
+                        </svg>
+                    </div>
+                </div>
+
+                {/* PRODUCT STRIP */}
+                <div className="w-full bg-slate-900 border-t border-slate-800 py-12">
+                    <div className="max-w-7xl mx-auto px-6 overflow-x-auto">
+                        <div className="flex justify-center min-w-max space-x-12 md:space-x-32 items-end">
+                            {/* Item 1: KEYR One */}
+                            <div className="flex flex-col items-center group cursor-pointer">
+                                <div className="w-32 h-32 md:w-40 md:h-40 bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl flex items-center justify-center mb-6 group-hover:-translate-y-2 transition-transform duration-300 border border-slate-700 group-hover:border-brand-accent/50 shadow-lg">
+                                     <svg viewBox="0 0 100 100" className="w-20 h-20">
+                                        <rect x="30" y="30" width="40" height="40" rx="10" fill="#94a3b8" />
+                                        <rect x="35" y="35" width="30" height="30" rx="8" fill="#0f172a" />
+                                     </svg>
+                                </div>
+                                <span className="text-base font-semibold text-white tracking-wide">KEYR One</span>
+                            </div>
+
+                             {/* Item 2: KEYR Ring */}
+                            <div className="flex flex-col items-center group cursor-pointer opacity-60 hover:opacity-100 transition-opacity duration-300">
+                                 <div className="w-32 h-32 md:w-40 md:h-40 bg-transparent rounded-3xl flex items-center justify-center mb-6 group-hover:-translate-y-2 transition-transform duration-300">
+                                     <div className="w-24 h-24 rounded-full border-[12px] border-slate-700 shadow-xl group-hover:border-slate-500 transition-colors"></div>
+                                </div>
+                                <span className="text-base font-medium text-slate-400">KEYR Ring</span>
+                            </div>
+                            
+                             {/* Item 3: KEYR Badge */}
+                             <div className="flex flex-col items-center group cursor-pointer opacity-60 hover:opacity-100 transition-opacity duration-300">
+                                 <div className="w-32 h-32 md:w-40 md:h-40 bg-transparent rounded-3xl flex items-center justify-center mb-6 group-hover:-translate-y-2 transition-transform duration-300">
+                                     <rect width="60" height="80" rx="4" fill="transparent" stroke="#475569" strokeWidth="4" />
+                                     <div className="w-16 h-20 border-2 border-slate-700 rounded bg-slate-800/50"></div>
+                                </div>
+                                <span className="text-base font-medium text-slate-400">KEYR Badge</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        );
+
+        /* ---------------- INTEGRATED MVP DEMONSTRATION ---------------- */
+        const MvpDemonstration = () => {
+            const [consoleOutput, setConsoleOutput] = React.useState([
+                { type: 'info', text: 'Ready to initialize backend simulation...' }
+            ]);
+            const [isRunning, setIsRunning] = React.useState(false);
+
+            // Mock of the Backend Service Logic defined in the prompt
+            const runSimulation = async () => {
+                if (isRunning) return;
+                setIsRunning(true);
+                setConsoleOutput([{ type: 'info', text: 'Connecting to NestJS API Gateway...' }]);
+
+                // Simulation Helpers
+                const delay = (ms) => new Promise(res => setTimeout(res, ms));
+                const log = (text, type='info') => setConsoleOutput(prev => [...prev, { type, text }]);
+
+                // Step 1: Ingest
+                await delay(800);
+                log('POST /eduvalid/submit [Payload: { title: "Thesis_v1", behavior: "keys_timings" }]', 'req');
+                
+                // Step 2: Humanify Analysis (humanify.service.ts)
+                await delay(1200);
+                log('Executing HumanifyService.analyzeSignals()...', 'sys');
+                await delay(600);
+                log('>> Signal Analysis: WPM=45 (Natural), Revisions=12 (Detected)', 'sys');
+                log('>> Probability Score: 0.95', 'success');
+
+                // Step 3: DB Write (Prisma)
+                await delay(800);
+                log('Prisma Client: Creating Submission record...', 'db');
+                await delay(500);
+                
+                // Mock Database Object based on Prisma Schema
+                const mockDbObject = {
+                    id: "sub_92f8-22a1-b44c",
+                    userId: "usr_88a1-b22c",
+                    humanifyScore: 0.95,
+                    status: "PENDING_REVIEW", // Enum: DRAFT, PENDING_REVIEW, APPROVED
+                    createdAt: new Date().toISOString()
+                };
+
+                log('DB Write Success. Row ID: sub_92f8-22a1-b44c', 'db');
+
+                // Step 4: Audit Log
+                await delay(400);
+                log('AuditInterceptor: Logged action "SUBMISSION_CREATED"', 'warn');
+
+                // Step 5: Response
+                await delay(400);
+                log(`Response: ${JSON.stringify(mockDbObject, null, 2)}`, 'res');
+                
+                setIsRunning(false);
+            };
+
+            return (
+                <section id="mvp" className="py-20 px-6 bg-slate-900 border-y border-slate-800">
+                    <div className="max-w-6xl mx-auto">
+                        <div className="flex items-center gap-4 mb-10">
+                            <h2 className="text-3xl font-bold text-white">Backend Integration Demo</h2>
+                            <div className="bg-brand-success/20 text-brand-success border border-brand-success/40 px-3 py-1 rounded text-xs font-mono font-bold uppercase tracking-wide">
+                                Connected
+                            </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-8">
+                            {/* Control Panel */}
+                            <div className="glass-panel p-8 rounded-xl border border-slate-700">
+                                <h4 className="text-lg font-semibold text-brand-accent mb-4 font-mono">SIMULATION CONTROLLER</h4>
+                                <p className="text-slate-400 mb-6 text-sm">
+                                    This runs the client-side equivalent of the <strong>Node.js/NestJS</strong> logic defined in the backend architecture.
+                                </p>
+                                
+                                <div className="space-y-4 mb-8">
+                                    <div className="flex items-center justify-between text-sm border-b border-slate-700 pb-2">
+                                        <span className="text-slate-300">Endpoint</span>
+                                        <span className="font-mono text-brand-warning">POST /eduvalid/submit</span>
+                                    </div>
+                                    <div className="flex items-center justify-between text-sm border-b border-slate-700 pb-2">
+                                        <span className="text-slate-300">Auth Guard</span>
+                                        <span className="font-mono text-brand-success">JwtAuthGuard (Active)</span>
+                                    </div>
+                                    <div className="flex items-center justify-between text-sm border-b border-slate-700 pb-2">
+                                        <span className="text-slate-300">Audit Status</span>
+                                        <span className="font-mono text-brand-success">Interceptor On</span>
+                                    </div>
+                                </div>
+
+                                <button 
+                                    onClick={runSimulation}
+                                    disabled={isRunning}
+                                    className={`w-full py-3 rounded font-bold flex items-center justify-center gap-2 transition ${
+                                        isRunning ? 'bg-slate-700 text-slate-500 cursor-not-allowed' : 'bg-brand-accent text-brand-900 hover:bg-sky-300'
+                                    }`}
+                                >
+                                    {isRunning ? 'Processing Logic...' : <><Icons.Terminal /> Run Live Simulation</>}
+                                </button>
+                            </div>
+
+                            {/* Terminal Output */}
+                            <div className="bg-slate-950 rounded-xl border border-slate-800 p-4 font-mono text-xs overflow-y-auto h-[400px] shadow-inner">
+                                <div className="flex items-center gap-2 border-b border-slate-800 pb-2 mb-2">
+                                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                                    <span className="text-slate-500 ml-2">server_logs</span>
+                                </div>
+                                <div className="space-y-2">
+                                    {consoleOutput.map((log, i) => (
+                                        <div key={i} className={`terminal-text break-words ${
+                                            log.type === 'req' ? 'text-blue-400' :
+                                            log.type === 'res' ? 'text-green-300' :
+                                            log.type === 'db' ? 'text-purple-400' :
+                                            log.type === 'sys' ? 'text-yellow-200' :
+                                            log.type === 'warn' ? 'text-orange-400' :
+                                            'text-slate-300'
+                                        }`}>
+                                            <span className="opacity-50">[{new Date().toLocaleTimeString()}]</span> {log.text}
+                                        </div>
+                                    ))}
+                                    {isRunning && <div className="animate-pulse text-brand-accent">_</div>}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const ProcessFlow = () => (
+            <section id="how-it-works" className="py-20 px-6 border-y border-slate-800">
+                <div className="max-w-5xl mx-auto">
+                    <h2 className="text-3xl font-bold mb-12 text-center">System Logic Flow</h2>
+                    
+                    <div className="relative">
+                        {/* Connecting Line */}
+                        <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-slate-800 md:left-1/2 md:-ml-px"></div>
+
+                        {/* Step 1 */}
+                        <div className="relative mb-12 md:flex md:justify-between items-center group">
+                            <div className="md:w-5/12 md:text-right pr-8">
+                                <h3 className="text-xl font-bold text-white">1. Ingestion & ID</h3>
+                                <p className="text-slate-400 text-sm mt-2">User enters ecosystem. Biometric liveness check + Govt ID hash (Zero Knowledge Proof).</p>
+                            </div>
+                            <div className="absolute left-8 -ml-4 md:left-1/2 md:-ml-4 w-8 h-8 rounded-full bg-slate-900 border-2 border-brand-accent flex items-center justify-center z-10 text-xs font-bold">1</div>
+                            <div className="pl-16 md:pl-0 md:w-5/12"></div>
+                        </div>
+
+                        {/* Step 2 */}
+                        <div className="relative mb-12 md:flex md:justify-between items-center group">
+                            <div className="hidden md:block md:w-5/12"></div>
+                            <div className="absolute left-8 -ml-4 md:left-1/2 md:-ml-4 w-8 h-8 rounded-full bg-slate-900 border-2 border-brand-accent flex items-center justify-center z-10 text-xs font-bold">2</div>
+                            <div className="pl-16 md:pl-0 md:w-5/12 pl-8">
+                                <h3 className="text-xl font-bold text-white">2. Action Validation</h3>
+                                <p className="text-slate-400 text-sm mt-2">User creates content or claims a skill. <span className="text-brand-accent">Humanify</span> analyzes behavioral patterns to rule out AI automation.</p>
+                            </div>
+                        </div>
+
+                         {/* Step 3 */}
+                         <div className="relative mb-12 md:flex md:justify-between items-center group">
+                            <div className="md:w-5/12 md:text-right pr-8">
+                                <h3 className="text-xl font-bold text-white">3. Peer Verification</h3>
+                                <p className="text-slate-400 text-sm mt-2"><span className="text-brand-success">Eduvalid</span> triggers. Content/Skill is reviewed by verified experts in that specific domain.</p>
+                            </div>
+                            <div className="absolute left-8 -ml-4 md:left-1/2 md:-ml-4 w-8 h-8 rounded-full bg-slate-900 border-2 border-brand-accent flex items-center justify-center z-10 text-xs font-bold">3</div>
+                            <div className="pl-16 md:pl-0 md:w-5/12"></div>
+                        </div>
+
+                        {/* Step 4 */}
+                        <div className="relative mb-4 md:flex md:justify-between items-center group">
+                            <div className="hidden md:block md:w-5/12"></div>
+                            <div className="absolute left-8 -ml-4 md:left-1/2 md:-ml-4 w-8 h-8 rounded-full bg-slate-900 border-2 border-brand-accent flex items-center justify-center z-10 text-xs font-bold">4</div>
+                            <div className="pl-16 md:pl-0 md:w-5/12 pl-8">
+                                <h3 className="text-xl font-bold text-white">4. Reputation Minting</h3>
+                                <p className="text-slate-400 text-sm mt-2"><span className="text-brand-warning">HNex</span> credits are assigned based on the value contributed. Trust Score increases.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        );
+
+        const EthicalSafeguards = () => (
+            <section className="py-20 px-6 bg-slate-950">
+                <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12">
+                    <div>
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-2 bg-slate-800 rounded text-brand-accent"><Icons.UserCheck /></div>
+                            <h2 className="text-2xl font-bold text-white">Human Review & Ethical Safeguards</h2>
+                        </div>
+                        <p className="text-slate-400 mb-6">
+                            We solve the "Black Box" problem of AI moderation. Humanify OS is designed to enforce trust without humiliation.
+                        </p>
+                        <ul className="space-y-4">
+                            <li className="glass-panel p-4 rounded border-l-4 border-brand-accent">
+                                <strong className="block text-white mb-1">No Automatic Bans</strong>
+                                <span className="text-sm text-slate-400">The system flags anomalies but never bans a user automatically. "Innocent until proven bot."</span>
+                            </li>
+                            <li className="glass-panel p-4 rounded border-l-4 border-brand-accent">
+                                <strong className="block text-white mb-1">Mandatory Appeal System</strong>
+                                <span className="text-sm text-slate-400">Users can challenge flags via a multi-signature review by verified high-reputation humans.</span>
+                            </li>
+                            <li className="glass-panel p-4 rounded border-l-4 border-brand-accent">
+                                <strong className="block text-white mb-1">Reputation Decay, Not Punishment</strong>
+                                <span className="text-sm text-slate-400">Bad actors lose visibility and trust score over time rather than facing abrupt de-platforming.</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-2 bg-slate-800 rounded text-brand-success"><Icons.Scale /></div>
+                            <h2 className="text-2xl font-bold text-white">Legal & Privacy Guardrails</h2>
+                        </div>
+                        <p className="text-slate-400 mb-6">
+                            Built 'Privacy-First' to align with GDPR principles and future AI safety regulations.
+                        </p>
+                        <div className="space-y-6">
+                            <div className="flex gap-4">
+                                <div className="mt-1"><div className="w-2 h-2 rounded-full bg-brand-success"></div></div>
+                                <div>
+                                    <h4 className="text-white font-bold text-sm">Zero-Knowledge Identity</h4>
+                                    <p className="text-xs text-slate-400 mt-1">We verify *that* you are a unique human without storing *who* you are. No biometric data is ever stored on our servers.</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-4">
+                                <div className="mt-1"><div className="w-2 h-2 rounded-full bg-brand-success"></div></div>
+                                <div>
+                                    <h4 className="text-white font-bold text-sm">User-Owned Reputation</h4>
+                                    <p className="text-xs text-slate-400 mt-1">Your 'Human Signature' and HNex credits are portable. You own your trust score, not the platform.</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-4">
+                                <div className="mt-1"><div className="w-2 h-2 rounded-full bg-brand-success"></div></div>
+                                <div>
+                                    <h4 className="text-white font-bold text-sm">Compliance-Friendly Architecture</h4>
+                                    <p className="text-xs text-slate-400 mt-1">Designed to plug into future government digital ID frameworks without friction.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        );
+
+        const AIAnalysis = () => (
+            <section className="py-20 px-6 bg-slate-900 border-t border-slate-800">
+                <div className="max-w-4xl mx-auto text-center">
+                    <h2 className="text-3xl font-bold mb-8">Why AI Cannot Solve This</h2>
+                    <div className="glass-panel p-8 rounded-xl text-left">
+                        <p className="text-lg text-slate-300 mb-6">
+                            Many ask: <em>"Can't we just use AI to detect AI?"</em>
+                        </p>
+                        <p className="text-slate-400 mb-6">
+                            The answer is <strong>No</strong>. AI is an optimization engine, not an ethical one. An AI can verify if code runs, but it cannot verify if a student <em>understood</em> the code, or if a teacher <em>cared</em> about the student.
+                        </p>
+                        <div className="grid md:grid-cols-2 gap-4 mt-8">
+                            <div className="bg-slate-800 p-4 rounded border border-red-500/30">
+                                <h4 className="font-bold text-red-400 mb-2">Artificial Intelligence</h4>
+                                <ul className="text-sm text-slate-400 list-disc list-inside space-y-1">
+                                    <li>Optimizes for output speed</li>
+                                    <li>Hallucinates facts</li>
+                                    <li>No moral accountability</li>
+                                </ul>
+                            </div>
+                            <div className="bg-slate-800 p-4 rounded border border-brand-accent/30">
+                                <h4 className="font-bold text-brand-accent mb-2">Humanify OS</h4>
+                                <ul className="text-sm text-slate-400 list-disc list-inside space-y-1">
+                                    <li>Optimizes for truth & origin</li>
+                                    <li>Verifies source of data</li>
+                                    <li>Assigns reputation consequences</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div className="mt-8 text-center">
+                            <span className="text-xl font-mono text-white">"AI assists work. Humanify verifies humanity."</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        );
+
+        const MarketFocus = () => (
+            <section id="market" className="py-16 px-6 bg-slate-950">
+                 <div className="max-w-5xl mx-auto">
+                    <div className="flex flex-col md:flex-row gap-8 items-center bg-brand-900/50 border border-brand-accent/20 p-8 rounded-xl">
+                        <div className="md:w-1/3 text-center md:text-left">
+                            <div className="inline-block px-3 py-1 bg-brand-accent/10 text-brand-accent rounded mb-4 text-xs font-bold uppercase tracking-wider">
+                                Phase 1 Focus
+                            </div>
+                            <h3 className="text-2xl font-bold text-white mb-2">Initial Market Entry</h3>
+                            <div className="text-6xl text-slate-700 font-bold opacity-20 -mt-4 absolute pointer-events-none">EDUCATION</div>
+                        </div>
+                        <div className="md:w-2/3 border-l border-slate-700 pl-0 md:pl-8">
+                            <p className="text-lg text-white font-medium mb-4">
+                                Humanify OS intentionally starts with <span className="text-brand-accent">Education & Teaching Platforms</span>.
+                            </p>
+                            <p className="text-slate-400 text-sm mb-4">
+                                Hiring markets, Government contracts, and Social Media are <strong>Phase 2+</strong> targets. We focus on education first because:
+                            </p>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="text-sm text-slate-400">✓ Skill verification is already accepted behavior.</div>
+                                <div className="text-sm text-slate-400">✓ Peer review is natural in academia.</div>
+                                <div className="text-sm text-slate-400">✓ Urgent need to solve "AI Homework" crisis.</div>
+                                <div className="text-sm text-slate-400">✓ Faster adoption cycle than Enterprise.</div>
+                            </div>
+                        </div>
+                    </div>
+                 </div>
+            </section>
+        );
+
+        const UseCases = () => {
+            const [activeTab, setActiveTab] = React.useState('edu');
+
+            const content = {
+                edu: {
+                    title: "Education & Licensing",
+                    desc: "Eliminating diploma mills and essay-writing bots.",
+                    points: [
+                        "Students prove skill acquisition via Eduvalid logs, not just final exams.",
+                        "Teachers earn HNex credits for successful student mentorship.",
+                        "Institutions issue unforgeable, dynamic transcripts."
+                    ]
+                },
+                work: {
+                    title: "Remote Work & Enterprise",
+                    desc: "Hiring talent with verified history, not just a PDF resume.",
+                    points: [
+                        "Employers view 'Verified Output History' instead of static CVs.",
+                        "Prevent 'Overemployment' fraud (working 5 jobs at once) via activity collisions.",
+                        "High-trust freelancers get lower platform fees."
+                    ]
+                },
+                govt: {
+                    title: "Government & Policy",
+                    desc: "A complimentary layer to national ID systems.",
+                    points: [
+                        "Does not replace National ID; acts as the 'Application Layer' for digital services.",
+                        "Safe distribution of grants based on verified skill milestones.",
+                        "Youth upskilling programs tracked with transparent data."
+                    ]
+                }
+            };
+
+            return (
+                <section id="use-cases" className="py-24 px-6">
+                    <div className="max-w-6xl mx-auto">
+                        <h2 className="text-3xl font-bold mb-12 text-center">Sector Implementation</h2>
+                        
+                        <div className="flex flex-wrap justify-center gap-4 mb-8">
+                            {Object.keys(content).map(key => (
+                                <button
+                                    key={key}
+                                    onClick={() => setActiveTab(key)}
+                                    className={`px-6 py-2 rounded-full font-medium transition ${
+                                        activeTab === key 
+                                        ? 'bg-brand-accent text-brand-900' 
+                                        : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                                    }`}
+                                >
+                                    {content[key].title}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="glass-panel p-8 md:p-12 rounded-2xl min-h-[300px]">
+                            <h3 className="text-2xl font-bold text-white mb-2">{content[activeTab].title}</h3>
+                            <p className="text-lg text-brand-accent mb-6">{content[activeTab].desc}</p>
+                            <ul className="space-y-4">
+                                {content[activeTab].points.map((point, index) => (
+                                    <li key={index} className="flex items-start gap-3">
+                                        <div className="mt-1.5 w-2 h-2 rounded-full bg-brand-accent"></div>
+                                        <span className="text-slate-300 text-lg">{point}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const Defensibility = () => (
+            <section className="py-20 px-6 bg-slate-900 border-t border-slate-800">
+                <div className="max-w-5xl mx-auto">
+                    <h2 className="text-3xl font-bold mb-8">Why This Is Defensible</h2>
+                    <div className="grid md:grid-cols-3 gap-6">
+                         <div className="glass-panel p-6 rounded-lg">
+                            <div className="bg-slate-800 w-10 h-10 rounded flex items-center justify-center mb-4 text-brand-accent"><Icons.Lock /></div>
+                            <h4 className="font-bold text-white mb-2">Reputation Lock-in</h4>
+                            <p className="text-sm text-slate-400">Trust scores take years to build. Once a user builds a high HNex score, switching costs become prohibitively high, creating retention.</p>
+                         </div>
+                         <div className="glass-panel p-6 rounded-lg">
+                            <div className="bg-slate-800 w-10 h-10 rounded flex items-center justify-center mb-4 text-brand-accent"><Icons.Network /></div>
+                            <h4 className="font-bold text-white mb-2">Human Review Network</h4>
+                            <p className="text-sm text-slate-400">A decentralized network of verified human reviewers is operationally complex to clone. AI startups cannot replicate this human layer.</p>
+                         </div>
+                         <div className="glass-panel p-6 rounded-lg">
+                            <div className="bg-slate-800 w-10 h-10 rounded flex items-center justify-center mb-4 text-brand-accent"><Icons.Target /></div>
+                            <h4 className="font-bold text-white mb-2">Behavioral Data</h4>
+                            <p className="text-sm text-slate-400">Our unique dataset of "Human Work Patterns" (keystrokes, edit history) compounds daily, improving accuracy beyond generic AI models.</p>
+                         </div>
+                    </div>
+                </div>
+            </section>
+        );
+
+        const BusinessModel = () => (
+            <section className="py-20 px-6 bg-slate-950 border-t border-slate-800">
+                <div className="max-w-5xl mx-auto">
+                    <div className="grid md:grid-cols-2 gap-12">
+                        <div>
+                            <h2 className="text-3xl font-bold mb-6">Business & Sustainability</h2>
+                            <p className="text-slate-400 mb-6">
+                                Humanify OS avoids volatile tokenomics. We operate on a stable, recurring revenue model tied to the value of verification.
+                            </p>
+                            <div className="space-y-4">
+                                <div className="p-4 border border-slate-700 rounded bg-slate-900">
+                                    <h4 className="font-bold text-white">1. SaaS Licensing</h4>
+                                    <p className="text-sm text-slate-400">Monthly fees for Institutions (Universities, Companies) to use Eduvalid.</p>
+                                </div>
+                                <div className="p-4 border border-slate-700 rounded bg-slate-900">
+                                    <h4 className="font-bold text-white">2. API Verification Calls</h4>
+                                    <p className="text-sm text-slate-400">Per-check fee when external platforms (e.g., Upwork, LinkedIn) verify a Humanify Signature.</p>
+                                </div>
+                                <div className="p-4 border border-slate-700 rounded bg-slate-900">
+                                    <h4 className="font-bold text-white">3. Enterprise Identity</h4>
+                                    <p className="text-sm text-slate-400">Custom trust environments for large organizations.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="glass-panel p-8 rounded border border-slate-700">
+                             <h2 className="text-2xl font-bold mb-6 text-brand-accent">SaaS Metrics Targets</h2>
+                             <ul className="space-y-4 text-sm">
+                                 <li className="flex justify-between border-b border-slate-700 pb-2">
+                                     <span className="text-slate-400">Target CAC</span>
+                                     <span className="text-white font-mono">$150 (B2B)</span>
+                                 </li>
+                                 <li className="flex justify-between border-b border-slate-700 pb-2">
+                                     <span className="text-slate-400">Est. LTV</span>
+                                     <span className="text-white font-mono">$4,200</span>
+                                 </li>
+                                 <li className="flex justify-between border-b border-slate-700 pb-2">
+                                     <span className="text-slate-400">Pilot Conversion</span>
+                                     <span className="text-white font-mono">>30%</span>
+                                 </li>
+                             </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        );
+
+        const ExecutionPlan = () => (
+            <div className="mt-16 bg-slate-900 border border-slate-700 rounded-xl overflow-hidden">
+                <div className="px-6 py-4 bg-slate-800 border-b border-slate-700">
+                    <h3 className="font-bold text-white">90-Day Execution Plan</h3>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm text-slate-400">
+                        <thead className="bg-slate-950 text-slate-200 font-mono uppercase text-xs">
+                            <tr>
+                                <th className="px-6 py-3">Timeline</th>
+                                <th className="px-6 py-3">Deliverables</th>
+                                <th className="px-6 py-3">Key Metrics</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-800">
+                            <tr>
+                                <td className="px-6 py-4 font-mono text-brand-accent">0–30 Days</td>
+                                <td className="px-6 py-4 text-white">MVP Refinement + Pilot Onboarding (3 Universities)</td>
+                                <td className="px-6 py-4">Pilot Setup Complete</td>
+                            </tr>
+                            <tr>
+                                <td className="px-6 py-4 font-mono text-brand-accent">31–60 Days</td>
+                                <td className="px-6 py-4 text-white">First 100 Verified Users & Content Pieces</td>
+                                <td className="px-6 py-4">95% Verif. Success Rate</td>
+                            </tr>
+                            <tr>
+                                <td className="px-6 py-4 font-mono text-brand-accent">61–90 Days</td>
+                                <td className="px-6 py-4 text-white">Institutional Review & API Stress Test</td>
+                                <td className="px-6 py-4">Waitlist > 1,000</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        );
+
+        const Roadmap = () => (
+            <section id="roadmap" className="py-20 px-6">
+                <div className="max-w-4xl mx-auto">
+                     <h2 className="text-3xl font-bold mb-10 text-center">Strategic Roadmap</h2>
+                     <div className="space-y-6">
+                        <div className="flex gap-6 items-start opacity-100">
+                            <div className="text-brand-accent font-mono font-bold whitespace-nowrap mt-1">PHASE 1</div>
+                            <div>
+                                <h4 className="text-white font-bold">Foundation (Current)</h4>
+                                <p className="text-slate-400 text-sm">Launch Humanify content detection & Eduvalid MVP. Pilot with 5 partner universities.</p>
+                            </div>
+                        </div>
+                        <div className="flex gap-6 items-start opacity-75">
+                            <div className="text-slate-500 font-mono font-bold whitespace-nowrap mt-1">PHASE 2</div>
+                            <div>
+                                <h4 className="text-white font-bold">Incentive Layer</h4>
+                                <p className="text-slate-400 text-sm">Deploy HNex internal credit system. Integration with LMS platforms (Moodle, Canvas).</p>
+                            </div>
+                        </div>
+                        <div className="flex gap-6 items-start opacity-50">
+                            <div className="text-slate-500 font-mono font-bold whitespace-nowrap mt-1">PHASE 3</div>
+                            <div>
+                                <h4 className="text-white font-bold">Institutional Scale</h4>
+                                <p className="text-slate-400 text-sm">Government Sandbox participation. API public release for workforce platforms.</p>
+                            </div>
+                        </div>
+                     </div>
+                     
+                     <ExecutionPlan />
+                </div>
+            </section>
+        );
+
+        const FounderVision = () => (
+            <section className="py-24 px-6 bg-gradient-to-b from-slate-900 to-slate-950 text-center border-t border-slate-800">
+                <div className="max-w-3xl mx-auto">
+                    <div className="w-16 h-16 bg-slate-800 rounded-full mx-auto mb-6 flex items-center justify-center text-3xl">❝</div>
+                    <h2 className="text-2xl md:text-3xl font-light italic text-white mb-8">
+                        "We are not building this to stop AI. We are building this to save humans. In a future of infinite synthetic abundance, scarcity shifts to <span className="text-brand-accent font-normal">human authenticity</span>."
+                    </h2>
+                    
+                    <div className="mt-12 text-left bg-slate-900/50 p-6 rounded-lg border border-slate-800 max-w-2xl mx-auto">
+                         <h4 className="text-brand-accent font-bold uppercase text-xs tracking-widest mb-2">Founder Origin</h4>
+                         <p className="text-slate-400 text-sm leading-relaxed">
+                             Built by a team with deep roots in educational systems and digital verification. We witnessed the collapse of credential integrity firsthand—watching diplomas become meaningless and skills become unverifiable. Humanify OS is not a theoretical project; it is an engineered response to the specific failure modes of trust we have observed in the market.
+                         </p>
+                    </div>
+                </div>
+            </section>
+        );
+
+        const InvestorSection = () => (
+            <section id="investors" className="py-20 px-6 bg-brand-900 border-t border-slate-800">
+                <div className="max-w-5xl mx-auto bg-slate-800 rounded-2xl p-8 md:p-12 text-center md:text-left flex flex-col md:flex-row items-center justify-between">
+                    <div className="md:w-2/3 mb-8 md:mb-0">
+                        <h2 className="text-2xl font-bold text-white mb-4">Investment Opportunity</h2>
+                        <p className="text-slate-300 mb-4">
+                            Humanify OS represents a <span className="text-brand-accent">category-defining infrastructure play</span>. We are building the trust layer that the entire internet will require to function in the post-AI era.
+                        </p>
+                        <p className="text-sm text-slate-500">
+                            Series A Round Opening Q3 2026. Institutional inquiries only.
+                        </p>
+                    </div>
+                    <div>
+                        <button className="bg-white text-brand-900 px-8 py-3 rounded font-bold hover:bg-slate-200 transition">
+                            Contact Relations
+                        </button>
+                    </div>
+                </div>
+            </section>
+        );
+
+        const Footer = () => (
+            <footer className="py-12 px-6 bg-black text-slate-500 text-sm border-t border-slate-900">
+                <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
+                    <div className="mb-4 md:mb-0">
+                        <span className="font-bold text-slate-300">HUMANIFY OS</span> &copy; 2026
+                    </div>
+                    <div className="flex space-x-6">
+                        <a href="#" className="hover:text-white">Privacy Policy</a>
+                        <a href="#" className="hover:text-white">Terms of Verification</a>
+                        <a href="#" className="hover:text-white">API Documentation</a>
+                    </div>
+                </div>
+            </footer>
+        );
+
+        const App = () => {
+            return (
+                <div className="antialiased selection:bg-brand-accent selection:text-brand-900">
+                    <Nav />
+                    <Hero />
+                    <ContextSection />
+                    <Architecture />
+                    <KeyrShowcase />
+                    <MvpDemonstration />
+                    <ProcessFlow />
+                    <EthicalSafeguards />
+                    <AIAnalysis />
+                    <MarketFocus />
+                    <UseCases />
+                    <Defensibility />
+                    <BusinessModel />
+                    <Roadmap />
+                    <FounderVision />
+                    <InvestorSection />
+                    <Footer />
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+
+    </script>
+</body>
+</html>
